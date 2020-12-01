@@ -1,0 +1,16 @@
+
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+	video {
+  width: 90%;
+  max-height: 90%;
+}
+</style>
+</head> 
+
+<body>
+<video width="320" height="240" controls>
+  <source src="video_url_to_replace" type="video/mp4">
+</video>
+</body>
