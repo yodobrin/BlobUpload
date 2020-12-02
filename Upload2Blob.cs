@@ -29,7 +29,7 @@ namespace upload2blob
     {
         [FunctionName("Upload2Blob")]
         public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
             ILogger log)
         {
             log.LogInformation("Upload2Blob function -  processing a request.");
