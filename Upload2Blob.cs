@@ -43,10 +43,21 @@ namespace upload2blob
             
             var formdata = await req.ReadFormAsync();
                         
-            string name = formdata["name"];            
+            string name = formdata["name"];         
+
+            if(string.IsNullOrEmpty(name)) {
+                // name of the blob must be provided
+                return new  BadRequestObjectResult("name is a mandatory field");
+
+            }
             
             BlobClient blobClient = containerClient.GetBlobClient(name);
             
+            if( req.Form.Files["file"] == null)
+            {
+                return new  BadRequestObjectResult("Please provide a file to upload");
+            }
+
             string responseMessage = null;
             try{
                 await blobClient.UploadAsync(req.Form.Files["file"].OpenReadStream());        
