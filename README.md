@@ -41,4 +41,4 @@ Deploy via VSCode to your subscription.
 ### Sample calling parameters (via postman)
 
 
-~[postman](pics/postman.png)
+![postman](pics/postman.png)
