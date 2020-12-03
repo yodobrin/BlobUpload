@@ -11,29 +11,29 @@ This example assume you have already provisioned:
 Once provision, create a container.
 
 
-## Functions
+## Function
 
 ### Upload2Blob
 The function is a http trigger function, it expects two parameters as post parameters:
 - name - the name of the file to be uploaded (can differ from the actual file name)
 - file - required to be passed as form data __File__ type
 
-Successful calls will result in `200` and message confirming the upload to the specific container. 
-Unsuccessful calls will result in specific error messages
+Successful calls will result in `200` and JSON message confirming the upload to the specific container. and the exposed url.
+Unsuccessful calls will result in specific JSON response with specific error messages
 
-### Expose2Web
-The function is EventGrid triggered, it will create a simple _html_ page, with link to the file landing in the specific container (same container as in the `Upload2Blob` function).
+#### Method :: Expose2Web
+The method is called with the new uploaded file uri, it will create a simple _html_ page, with link to the file landing in the specific container (same container as in the `Upload2Blob` function).
 The current code is supporting __hard coded__ `mp4` file types, feel free to enhance it.
 
-It will use the `template.txt` template file, replace the uri of the file:
+It will use the `template.txt` template file which is stored in another container, replace the uri of the file:
 ```
 <video width="320" height="240" controls>
   <source src="video_url_to_replace" type="video/mp4">
 </video>
 ```
-With the location of the uploaded file (part of the event grid message).
+With the location of the uploaded file. 
 
-**Tip** Need to worry about access control
+**Tip** Need to worry about access control: in my solution I generated SAS token for the container, store it in the function configuration.
 
 
 ## Deployment
@@ -48,14 +48,21 @@ Change/create the local.setting.json with:
         "AzureWebJobsStorage": "<your function storage connection string>",
         "FUNCTIONS_WORKER_RUNTIME": "dotnet",
         "LANDING_CONTAINER": "<your container name>",
-        "STORAGE": "<your designated storage connection string>"
+        "STORAGE": "<your designated storage connection string>",
+        "CONTENT": "$web",
+        "TEMPLATES": "templates",
+        "SAS_TOKEN": "<SAS token for the container>",
+        "BASE_URL":"<your base url - taken from the static-web blade>"    
     }
 }
 
 ```
+Create a storage account. Enable the storage account to have static-web capabilities. this will create a `$web` container.
+Create `landing` `templates` containers (or use other names as you see fit)
+
+
 Open VSCode in the created directory, allow it to update with the latest __Azure Function__ plugins.
 Deploy via VSCode to your subscription.
-
 
 ### Sample calling parameters (via postman)
 

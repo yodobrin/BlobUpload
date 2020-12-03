@@ -21,12 +21,18 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using System.IO;
+using System.Text;
+
+using Newtonsoft.Json;
 
 
 namespace upload2blob
 {
     public static class Upload2Blob
     {
+        const string REPLACE_STRING = "video_url_to_replace"; 
         [FunctionName("Upload2Blob")]
         public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
@@ -41,34 +47,105 @@ namespace upload2blob
             BlobServiceClient blobServiceClient = new BlobServiceClient(connectionString);
             BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(containerName);  
             
+            dynamic uploadResponse = new System.Dynamic.ExpandoObject();
+
             var formdata = await req.ReadFormAsync();
                         
             string name = formdata["name"];         
 
             if(string.IsNullOrEmpty(name)) {
                 // name of the blob must be provided
-                return new  BadRequestObjectResult("name is a mandatory field");
+                uploadResponse.ErrorMessage = "name is a mandatory field";
+                uploadResponse.Status = "Failure";
+                return new BadRequestObjectResult(JsonConvert.SerializeObject(uploadResponse));
 
             }
             
+            uploadResponse.SourceFileName = name;
+
+
             BlobClient blobClient = containerClient.GetBlobClient(name);
             
             if( req.Form.Files["file"] == null)
             {
-                return new  BadRequestObjectResult("Please provide a file to upload");
+                uploadResponse.ErrorMessage = "Please provide a file to upload";
+                uploadResponse.Status = "Failure";
+                return new BadRequestObjectResult(JsonConvert.SerializeObject(uploadResponse));
             }
-
-            string responseMessage = null;
+            
+            
             try{
-                await blobClient.UploadAsync(req.Form.Files["file"].OpenReadStream());        
-                responseMessage = $"Uploaded {name} to the container: {containerName}";                
+                await blobClient.UploadAsync(req.Form.Files["file"].OpenReadStream());     
+                string endpoint = await Upload2Site(connectionString,blobClient.Uri.ToString(),log);   
+                uploadResponse.UploadedFile = blobClient.Uri.ToString();
+                uploadResponse.ExposedURL = endpoint;
+                uploadResponse.Status = "Success";        
             }catch(Exception ex)
             {
-                log.LogError($"Upload2Blob function - Exception found {ex.Message}");
-                responseMessage = $"Unable to upload {name} to the container: {containerName} ";
+                log.LogError($"Upload2Blob function - Exception thrown during upload to blob {ex.Message}");
+                uploadResponse.ErrorMessage = $"Unable to upload {name} to the container: {containerName} ";
+                uploadResponse.Status = "Failure";
             }
             log.LogInformation("Upload2Blob function completed.");
-            return new OkObjectResult(responseMessage);
+            return new OkObjectResult(JsonConvert.SerializeObject(uploadResponse));
+        }
+
+        public static async Task<string> Upload2Site(string connectionString,string uri,ILogger log)
+        {
+            string token = Environment.GetEnvironmentVariable("SAS_TOKEN");
+            string path2save = Environment.GetEnvironmentVariable("CONTENT");            
+            string templateContainer = Environment.GetEnvironmentVariable("TEMPLATES");
+            string baseUrl = Environment.GetEnvironmentVariable("BASE_URL");
+
+            BlobServiceClient blobServiceClient = new BlobServiceClient(connectionString);
+            BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(path2save);
+            BlobContainerClient templateContainerClient = blobServiceClient.GetBlobContainerClient(templateContainer);
+
+            // hard coding template.txt file for this example
+            string templateName = "template.txt";
+            BlobClient templateClient = templateContainerClient.GetBlobClient(templateName);  
+
+            StringBuilder htmlContentB = new StringBuilder();
+            var response = await templateClient.DownloadAsync();
+
+            using (var streamReader = new StreamReader(response.Value.Content))
+            {
+                while (!streamReader.EndOfStream)
+                {
+                var line = await streamReader.ReadLineAsync();
+                htmlContentB.AppendLine(line);
+                }
+            }
+
+            string htmlContent = htmlContentB.ToString();
+
+            log.LogInformation($"Upload2Blob:Expose2Web html template contnet: {htmlContent}");
+
+            string HtmlFileName = $"{Guid.NewGuid().ToString()}.html";
+            BlobClient blobClient = containerClient.GetBlobClient(HtmlFileName);  
+
+            string authuri = $"{uri}{token}";
+
+            htmlContent = htmlContent.Replace(REPLACE_STRING,authuri);
+            log.LogInformation($"Upload2Blob:Expose2Web html final contnet: {htmlContent}");
+            byte[] byteArray = Encoding.UTF8.GetBytes(htmlContent);
+            string webLink = $"{baseUrl}{HtmlFileName}";
+            MemoryStream stream = new MemoryStream(byteArray);
+
+            try{
+                 await blobClient.UploadAsync(stream);      
+
+                BlobHttpHeaders blobHttpHeaders = new BlobHttpHeaders();
+                blobHttpHeaders.ContentType = "text/html";
+                blobClient.SetHttpHeaders(blobHttpHeaders);  
+                
+            }catch(Exception ex)
+            {
+                log.LogError($"Upload2Blob:Expose2Web - Exception thrown during upload of html file: {ex.Message}");
+                
+            }
+
+            return webLink;
         }
 
 
