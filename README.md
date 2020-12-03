@@ -1,15 +1,15 @@
 # BlobUpload
-This repo illustrate how can Azure function used to upload content to specific blob storage & to trigger another function which will create a wrapping html5 page which can then be used as part of a static web-site.
+This repo illustrate the use of Azure function  to upload content to specific blob storage & to create a wrapping html5 page which can then be used as part of a static web-site.
+
+_note: This is a working skeleton._
 
 ## High level diagram
 ![diagram](pics/blobupload.png)
 
 ## Required Components
 This example assume you have already provisioned:
-- Storage account
+- Storage account, enable static-web
 - Function App
-Once provision, create a container.
-
 
 ## Function
 
@@ -57,7 +57,7 @@ Change/create the local.setting.json with:
 }
 
 ```
-Create a storage account. Enable the storage account to have static-web capabilities. this will create a `$web` container.
+(_if u skipped this before_)Create a storage account. Enable the storage account to have static-web capabilities. this will create a `$web` container.
 Create `landing` `templates` containers (or use other names as you see fit)
 
 
