@@ -45,6 +45,7 @@ namespace upload2blob
             log.LogInformation($"Container Name: {containerName}");
 
             BlobServiceClient blobServiceClient = new BlobServiceClient(connectionString);
+            
             BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(containerName);  
             
             dynamic uploadResponse = new System.Dynamic.ExpandoObject();
