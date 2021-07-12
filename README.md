@@ -81,19 +81,25 @@ ___Note:___ While the code care for two types of identities accessing the keyvau
 
 ### Secured Posture
 
+
 #### Enable FunctionApp authentication
+
 ![image](https://user-images.githubusercontent.com/37622785/125288225-8c79ff80-e326-11eb-9375-2d8aca706429.png)
 
 Add a provider, in our case its AAD, create a new app. I choose 401 as an unauthenticated response
+
 ![image](https://user-images.githubusercontent.com/37622785/125288304-a7e50a80-e326-11eb-8871-747695ebb532.png)
 
 #### Enable managed identity
+
 ![image](https://user-images.githubusercontent.com/37622785/125288003-4f157200-e326-11eb-9897-5ffc4e3efbc2.png)
 
 #### Allow MI or SPN access to your KeyVault
 Provide the minimal set of operations to your applications
 ![image](https://user-images.githubusercontent.com/37622785/125288668-132edc80-e327-11eb-8ee1-e821cf848dc7.png)
+
 I used old fashioned AKV access policy (not RBAC)
+
 ![image](https://user-images.githubusercontent.com/37622785/125288754-29d53380-e327-11eb-96bc-9eca8abee18e.png)
 
 
