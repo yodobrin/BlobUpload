@@ -1,5 +1,7 @@
 # BlobUpload
-This repo illustrate the use of Azure function  to upload content to specific blob storage & to create a wrapping html5 page which can then be used as part of a static web-site.
+This repo illustrate the use of Azure function with specific focus on two blob activities;  
+- Upload content to specific blob storage & to create a wrapping html5 page which can then be used as part of a static web-site.
+- Generate SAS token for a blob, using managed identity & keyvault
 
 _note: This is a working skeleton._
 
@@ -73,3 +75,5 @@ Deploy via VSCode to your subscription.
 ## High level diagram - GetSasToken
 Sample on how to generate sas token. consider this high level architecture. 
 ![image](https://user-images.githubusercontent.com/37622785/125249306-c387eb00-e2fd-11eb-94c9-b4c17fdaaba4.png)
+
+___Note:___ While the code care for two types of identities accessing the keyvault, i a real scenario, only one would be used.
