@@ -3,7 +3,7 @@ This repo illustrate the use of Azure function  to upload content to specific bl
 
 _note: This is a working skeleton._
 
-## High level diagram
+## High level diagram - Upload2Blob
 ![diagram](pics/blobupload.png)
 
 ## Required Components
@@ -68,3 +68,8 @@ Deploy via VSCode to your subscription.
 
 
 ![postman](pics/postman.png)
+
+
+## High level diagram - GetSasToken
+Sample on how to generate sas token. consider this high level architecture. 
+![image](https://user-images.githubusercontent.com/37622785/125249306-c387eb00-e2fd-11eb-94c9-b4c17fdaaba4.png)
